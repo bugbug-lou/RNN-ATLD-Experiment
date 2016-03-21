@@ -12,7 +12,7 @@ pip install Theano
 
 #### Language Modeling Experiments
 
-Select model to run in config.py, then run main.py.
+First, run makedata.sh. Then select model to run in config.py and run main.py.
 
 To run the baseline models:
 ```bash
