@@ -1,6 +1,6 @@
 #### Recurrent Dropout without loss of Memory
 
-Theano code for the Penn Treebank language model and Temporal Order experiments in the paper [Recurrent Dropout without loss of Memory](link).
+Theano code for the Penn Treebank language model and Temporal Order experiments in the paper [Recurrent Dropout without Memory Loss](https://arxiv.org/abs/1603.05118).
 
 #### Requirements
 
