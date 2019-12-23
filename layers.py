@@ -1,5 +1,5 @@
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-
+import numpy
 from utils import *
 
 class Linear(object):
@@ -36,7 +36,7 @@ class Dropout(object):
 
     def __call__(self, x):
         if self.train:
-            return x * self.srng.binomial(x.shape, p=1-self.p, dtype=theano.config.floatX) / (1 - self.p)
+            return x * self.srng.binomial(x.shape, p=1-self.p, dtype=theano.config.floatX)/(1-self.p)
         return x
 
     def set_phase(self, train):
@@ -44,7 +44,7 @@ class Dropout(object):
 
 
 class LSTM(object):
-    def __init__(self, input_size, layer_size, batch_size, hid_dropout_rate, drop_candidates, per_step,
+    def __init__(self, input_size, layer_size, batch_size, hid_dropout_rate, hid_scale, drop_candidates, per_step,
                  activation=T.tanh, inner_activation=T.nnet.sigmoid, weight_init=Uniform(), persistent=True):
         self.drop_candidates = drop_candidates
         self.per_step = per_step
@@ -88,6 +88,7 @@ class LSTM(object):
         self.train = True
         self.batch_size = batch_size
         self.hid_dropout_rate = hid_dropout_rate
+        self.hid_scale = hid_scale
         self.layer_size = layer_size
         self.persistent = persistent
 
@@ -96,14 +97,15 @@ class LSTM(object):
         xi, xf, xc, xo = self._input_to_hidden(x)
 
         if self.per_step:
-            masks = self.srng.binomial(n=1, p=1-self.hid_dropout_rate, size=(xi.shape[0], self.batch_size, self.layer_size), dtype=theano.config.floatX)
+            masks = self.srng.normal(loc = 0.0, scale = self.hid_scale, size = (1,self.batch_size,self.layer_size)) * self.srng.binomial(n=1, p=1-self.hid_dropout_rate, size=(xi.shape[0], self.batch_size, self.layer_size), dtype=theano.config.floatX)
             [outputs, memories], updates = theano.scan(self._hidden_to_hidden,
                 sequences=[xi, xf, xo, xc, masks],
                 outputs_info=[self.h, self.c],
                 non_sequences=[self.U_i, self.U_f, self.U_o, self.U_c],
             )
         else:
-            mask = self.srng.binomial(n=1, p=1-self.hid_dropout_rate, size=(self.batch_size, self.layer_size), dtype=theano.config.floatX)
+            tau = self.srng.normal(size = (self.batch_size,1), avg = 0.0, std = self.hid_scale, dtype=theano.config.floatX)
+            masks = tau * tau * self.srng.binomial(n=1, p=1-self.hid_dropout_rate, size=(self.batch_size, self.layer_size), dtype=theano.config.floatX)
             [outputs, memories], updates = theano.scan(self._hidden_to_hidden_per_seq,
                 sequences=[xi, xf, xo, xc],
                 outputs_info=[self.h, self.c],

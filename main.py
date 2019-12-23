@@ -36,7 +36,7 @@ def main(args):
         Embed(train_db.vocab_size, config.layer_size, weight_init=Uniform(config.scale)),
         Dropout(config.in_dropout_rate),
         rnns[config.model](config.layer_size, config.layer_size, train_db.batch_size, args.hid_dropout_rate,
-                           args.drop_candidates, args.per_step, weight_init=Uniform(config.scale)),
+                           args.hid_scale, args.drop_candidates, args.per_step, weight_init=Uniform(config.scale)),
         Dropout(config.out_dropout_rate),
         Linear(config.layer_size, train_db.vocab_size, weight_init=Uniform(config.scale))
     ])
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--hid_dropout_rate', dest='hid_dropout_rate', type=float, default=0.0)
     parser.add_argument('--test', dest='test_only', action='store_true', default=False)
+    parser.add_argument('--hid_scale', dest='hid_scale', type=float, default=0.0)
     parser.add_argument('--drop_candidates', dest='drop_candidates', action='store_true', default=False)
     parser.add_argument('--per_step', dest='per_step', action='store_true', default=False)
     args, _ = parser.parse_known_args()

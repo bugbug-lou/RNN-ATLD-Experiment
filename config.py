@@ -4,7 +4,7 @@ scale = 0.05
 layer_size = 256
 
 # lm settings
-model = 'rnn'
+model = 'lstm'
 in_dropout_rate = 0.2
 out_dropout_rate = 0.5
 
